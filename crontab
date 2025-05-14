@@ -1,0 +1,1 @@
+* * * * * php /var/www/html/console.php command:import-subscribers-from-uploaded-files >> /var/www/cron.log 2>&1

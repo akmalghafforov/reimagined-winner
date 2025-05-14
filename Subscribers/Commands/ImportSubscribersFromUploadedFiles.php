@@ -20,6 +20,7 @@ class ImportSubscribersFromUploadedFiles
     {
         $nextFile = $this->fileRepository->getNextForProcessing();
         if (empty($nextFile['id'])) {
+            echo "Nothing to import" . PHP_EOL;
             return;
         }
 

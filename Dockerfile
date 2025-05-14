@@ -19,9 +19,9 @@ RUN apk add --no-cache \
     make \
     curl \
     nginx  \
-    curl \
     git \
-    unzip
+    busybox-suid \
+    cronie
 
 # Configure PHP extensions
 RUN docker-php-ext-configure zip \
@@ -33,8 +33,14 @@ WORKDIR /var/www
 # Copy your application (optional)
 COPY . .
 
+# Set up cron job
+COPY crontab /etc/crontabs/root
+
+# Fix permissions
+RUN chmod 0644 /etc/crontabs/root
+
 # Expose port (if needed)
 EXPOSE 9000
 
-# Start PHP-FPM
-CMD ["php-fpm"]
+# Start PHP-FPM & Start cron in foreground
+CMD ["php-fpm", "crond -f -l 2"]
