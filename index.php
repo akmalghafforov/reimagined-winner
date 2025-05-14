@@ -10,6 +10,7 @@ require_once __DIR__ . '/Files/Services/UploadFileService.php';
 require_once __DIR__ . '/Files/Api/V1/UploadFileCommand.php';
 
 use Files\Api\V1\UploadFileCommand;
+use Files\Enums\FileStatusEnum;
 use Files\Repositories\FileRepository;
 use Files\Services\UploadFileService;
 
@@ -17,6 +18,14 @@ $request_uri = $_SERVER['REQUEST_URI'];
 $request_method = $_SERVER['REQUEST_METHOD'];
 
 if (str_starts_with($request_uri, '/v1/files/upload') && $request_method === 'POST') {
+    $repo = new FileRepository(PdoHelper::getConnection());
+    $res = $repo->getNextForProcessing();
+
+
+
+    $repo->updateStatus($res['id'], FileStatusEnum::NOT_STARTED);
+    exit;
+
     $command = new UploadFileCommand(
         new FileRepository(PdoHelper::getConnection()),
         new UploadFileService()

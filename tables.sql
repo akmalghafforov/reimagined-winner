@@ -2,7 +2,7 @@
 CREATE TABLE files (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    path VARCHAR(300) NOT NULL,,
+    path VARCHAR(300) NOT NULL,
     status INTEGER NOT NULL,
     uploaded_at TIMESTAMP NOT NULL DEFAULT NOW(),
     hash_md5 CHAR(32),
@@ -32,3 +32,9 @@ CREATE TABLE sent_mail (
     subscriber_id INTEGER NOT NULL REFERENCES subscribers(id) ON DELETE CASCADE,
     sent_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE files ADD COLUMN last_processed_at TIMESTAMP;
+
+ALTER TABLE subscribers ADD CONSTRAINT unique_number UNIQUE (number);
+
+CREATE INDEX idx_subscribers_number ON subscribers (number);
