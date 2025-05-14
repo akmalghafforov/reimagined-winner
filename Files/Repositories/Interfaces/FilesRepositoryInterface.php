@@ -4,7 +4,7 @@ namespace Files\Repositories\Interfaces;
 
 use Files\Enums\FileStatusEnum;
 
-interface FileRepositoryInterface
+interface FilesRepositoryInterface
 {
     public function checkIfTheFileWasNotUploadedPreviously($hashMd5, $hashSha256): bool;
 

@@ -3,31 +3,23 @@
 require_once __DIR__ . '/Core/Helpers/PdoHelper.php';;
 require_once __DIR__ . '/Core/Traits/JsonResponse.php';
 
-require_once __DIR__ . '/Files/Repositories/Interfaces/FileRepositoryInterface.php';
+require_once __DIR__ . '/Files/Repositories/Interfaces/FilesRepositoryInterface.php';
 require_once __DIR__ . '/Files/Enums/FileStatusEnumEnum.php';
-require_once __DIR__ . '/Files/Repositories/FileRepository.php';
+require_once __DIR__ . '/Files/Repositories/FilesRepository.php';
 require_once __DIR__ . '/Files/Services/UploadFileService.php';
 require_once __DIR__ . '/Files/Api/V1/UploadFileCommand.php';
 
+use Core\Helpers\PdoHelper;
 use Files\Api\V1\UploadFileCommand;
-use Files\Enums\FileStatusEnum;
-use Files\Repositories\FileRepository;
+use Files\Repositories\FilesRepository;
 use Files\Services\UploadFileService;
 
 $request_uri = $_SERVER['REQUEST_URI'];
 $request_method = $_SERVER['REQUEST_METHOD'];
 
 if (str_starts_with($request_uri, '/v1/files/upload') && $request_method === 'POST') {
-    $repo = new FileRepository(PdoHelper::getConnection());
-    $res = $repo->getNextForProcessing();
-
-
-
-    $repo->updateStatus($res['id'], FileStatusEnum::NOT_STARTED);
-    exit;
-
     $command = new UploadFileCommand(
-        new FileRepository(PdoHelper::getConnection()),
+        new FilesRepository(PdoHelper::getConnection()),
         new UploadFileService()
     );
     $command->run();

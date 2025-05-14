@@ -38,3 +38,5 @@ ALTER TABLE files ADD COLUMN last_processed_at TIMESTAMP;
 ALTER TABLE subscribers ADD CONSTRAINT unique_number UNIQUE (number);
 
 CREATE INDEX idx_subscribers_number ON subscribers (number);
+
+ALTER TABLE subscribers ALTER COLUMN id TYPE BIGINT;

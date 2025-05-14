@@ -2,53 +2,54 @@
 
 namespace Subscribers\Commands;
 
-use Files\Repositories\FileRepository;
+use Throwable;
+use Core\Helpers\CsvHelper;
+use Files\Enums\FileStatusEnum;
+use Files\Repositories\Interfaces\FilesRepositoryInterface;
+use Subscribers\Repositories\Interfaces\SubscribersRepositoryInterface;
 
 class ImportSubscribersFromUploadedFiles
 {
-    public function __construct(private readonly FileRepository $fileRepository)
-    {
+    public function __construct(
+        private readonly FilesRepositoryInterface       $fileRepository,
+        private readonly SubscribersRepositoryInterface $subscribersRepository,
+    ) {
     }
 
-    public function handle()
+    public function handle(): void
     {
         $nextFile = $this->fileRepository->getNextForProcessing();
         if (empty($nextFile['id'])) {
             return;
         }
 
-        //$this->fileRepository->updateStatus($nextFile['id'], FileStatusEnum::PROCESSING);
-        $subscribersToImport = $this->parseCsvToArray($nextFile['path']);
+        echo "Import started." . PHP_EOL;
 
-        foreach (array_chunk($subscribersToImport, 100) as $chunk) {
-            $numbers = array_column($chunk, 0);
-            print_r($numbers);
-            exit;
-        }
-    }
+        $this->fileRepository->updateStatus($nextFile['id'], FileStatusEnum::PROCESSING);
+        $subscribers = CsvHelper::parseCsvToArray($nextFile['path']);
 
-    private function parseCsvToArray(string $filePath, bool $withHeaders = false): array
-    {
-        $data = [];
+        foreach (array_chunk($subscribers, 1000) as $index => $chunk) {
+            try {
+                $numbers = array_column($chunk, 0);
+                $missingNumbers = $this->subscribersRepository->getMissingSubscriberNumbers($numbers);
+                $missingSet = array_flip($missingNumbers);
 
-        if (!file_exists($filePath) || !is_readable($filePath)) {
-            return $data;
-        }
+                $subscribersToImport = array_filter($chunk, function ($subscriber) use ($missingSet) {
+                    return isset($missingSet[(int)$subscriber[0]]);
+                });
 
-        if (($handle = fopen($filePath, 'r')) !== false) {
-            $headers = $withHeaders ? fgetcsv($handle) : [];
+                $this->subscribersRepository->bulkInsert(
+                    array_values($subscribersToImport)
+                );
 
-            while (($row = fgetcsv($handle)) !== false) {
-                if ($withHeaders) {
-                    $data[] = array_combine($headers, $row);
-                } else {
-                    $data[] = $row;
-                }
+                echo "\tChunk #$index imported" . PHP_EOL;
+            } catch (Throwable $e) {
+                echo "\tChunk #$index failed" . PHP_EOL;
             }
-
-            fclose($handle);
         }
 
-        return $data;
+        $this->fileRepository->updateStatus($nextFile['id'], FileStatusEnum::COMPLETED);
+
+        echo "Import finished." . PHP_EOL;
     }
 }

@@ -6,15 +6,12 @@ use PDO;
 use PDOException;
 
 use Files\Enums\FileStatusEnum;
-use Files\Repositories\Interfaces\FileRepositoryInterface;
+use Files\Repositories\Interfaces\FilesRepositoryInterface;
 
-class FileRepository implements FileRepositoryInterface
+class FilesRepository implements FilesRepositoryInterface
 {
-    private PDO $pdo;
-
-    public function __construct(PDO $pdo)
+    public function __construct(private readonly PDO $pdo)
     {
-        $this->pdo = $pdo;
     }
 
     public function checkIfTheFileWasNotUploadedPreviously($hashMd5, $hashSha256): bool
@@ -87,8 +84,7 @@ class FileRepository implements FileRepositoryInterface
     {
         try {
             $status = $status->value;
-            $notStartedStatus = FileStatusEnum::NOT_STARTED->value;
-            $processingStatus = FileStatusEnum::PROCESSING->value;
+            $completedStatus = FileStatusEnum::COMPLETED->value;
 
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $stmt = $this->pdo->prepare("
@@ -99,12 +95,11 @@ class FileRepository implements FileRepositoryInterface
                     last_processed_at = NOW()
                 WHERE 
                     id = :id AND
-                    status IN (:not_started, :processing);
+                    status != :completed;
             ");
             $stmt->bindParam(':status', $status);
             $stmt->bindParam(':id', $id);
-            $stmt->bindParam(':not_started', $notStartedStatus);
-            $stmt->bindParam(':processing', $processingStatus);
+            $stmt->bindParam(':completed', $completedStatus);
             return $stmt->execute();
         } catch (PDOException $e) {
             return false;

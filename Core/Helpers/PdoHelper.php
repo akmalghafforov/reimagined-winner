@@ -1,5 +1,9 @@
 <?php
 
+namespace Core\Helpers;
+
+use PDO;
+
 class PdoHelper
 {
     public static function getConnection(): PDO
