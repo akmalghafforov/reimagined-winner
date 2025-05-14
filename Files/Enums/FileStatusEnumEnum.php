@@ -1,6 +1,6 @@
 <?php
 
-namespace Core\Enums;
+namespace Files\Enums;
 
 enum FileStatusEnum: int
 {

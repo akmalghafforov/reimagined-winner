@@ -5,8 +5,8 @@ namespace Files\Repositories;
 use PDO;
 use PDOException;
 
-use Core\Enums\FileStatusEnum;
-use Core\Repositories\FileRepositoryInterface;
+use Files\Enums\FileStatusEnum;
+use Files\Repositories\Interfaces\FileRepositoryInterface;
 
 class FileRepository implements FileRepositoryInterface
 {

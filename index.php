@@ -1,10 +1,10 @@
 <?php
 
-require_once __DIR__ . '/Core/Enums/FileStatusEnumEnum.php';
 require_once __DIR__ . '/Core/Helpers/PdoHelper.php';;
 require_once __DIR__ . '/Core/Traits/JsonResponse.php';
-require_once __DIR__ . '/Core/Repositories/FileRepositoryInterface.php';
-;
+
+require_once __DIR__ . '/Files/Repositories/Interfaces/FileRepositoryInterface.php';
+require_once __DIR__ . '/Files/Enums/FileStatusEnumEnum.php';
 require_once __DIR__ . '/Files/Repositories/FileRepository.php';
 require_once __DIR__ . '/Files/Services/UploadFileService.php';
 require_once __DIR__ . '/Files/Api/V1/UploadFileCommand.php';

@@ -3,7 +3,7 @@
 namespace Files\Api\V1;
 
 use Core\Traits\JsonResponse;
-use Files\Repositories\FileRepository;
+use Files\Repositories\Interfaces\FileRepositoryInterface;
 use Files\Services\UploadFileService;
 
 class UploadFileCommand
@@ -11,8 +11,8 @@ class UploadFileCommand
     use JsonResponse;
 
     public function __construct(
-        private readonly FileRepository    $fileRepository,
-        private readonly UploadFileService $uploadService
+        private readonly FileRepositoryInterface $fileRepository,
+        private readonly UploadFileService       $uploadService
     )
     {
     }
