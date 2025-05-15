@@ -2,36 +2,36 @@
 
 namespace Core\Kernel;
 
-use BulkMailer\Commands\SendNextMailToAllSubscribersCommand;
 use Core\Helpers\PdoHelper;
+use Core\Traits\ConsoleTrait;
 use Files\Repositories\FilesRepository;
 use Mail\Repositories\MailsRepository;
 use Mail\Services\SendMailToSubscriberService;
-use Subscribers\Commands\ImportSubscribersFromUploadedFilesCommand;
 use Subscribers\Repositories\SubscribersRepository;
+use BulkMailer\Commands\SendNextMailToAllSubscribersCommand;
+use Subscribers\Commands\ImportSubscribersFromUploadedFilesCommand;
 
 class Console
 {
+    use ConsoleTrait;
+
     public function run(): void
     {
-        $argv = $_SERVER['argv'] ?? [];
-        $command = $argv[1] ?? '';
-
-        $commands = $this->getCommandsResolvers();
-        $commandClosure = $commands[$command] ?? null;
-        if (!$commandClosure) {
-            echo 'The requested command does not exist.';
-            exit;
+        $commandBuilder = $this->getCommandsBuilder();
+        if (!$commandBuilder) {
+            $this->line('The requested command does not exist.');
+            return;
         }
 
-        $commandObj = $commandClosure();
+        $commandObj = $commandBuilder();
         $commandObj->handle();
-        echo PHP_EOL;
+        $this->line('Exit');
     }
 
-    private function getCommandsResolvers(): array
+    private function getCommandsBuilder(): ?callable
     {
-        return [
+        $command = $_SERVER['argv'][1] ?? '';
+        $commandMap =  [
             'command:import-subscribers-from-uploaded-files' => function () {
                 $fileRepository = new FilesRepository(PdoHelper::getConnection());
                 $subscriberRepository = new SubscribersRepository(PdoHelper::getConnection());
@@ -52,5 +52,7 @@ class Console
                 );
             }
         ];
+
+        return $commandMap[$command] ?? null;
     }
 }

@@ -11,20 +11,30 @@ class Web
 {
     public function run(): void
     {
-        $request_uri = $_SERVER['REQUEST_URI'];
-        $request_method = $_SERVER['REQUEST_METHOD'];
-
-        if (str_starts_with($request_uri, '/v1/files/upload') && $request_method === 'POST') {
-            $command = new UploadFileCommand(
-                new FilesRepository(PdoHelper::getConnection()),
-                new UploadFileService()
-            );
-            $command->run();
+        $commandBuilder = $this->getCommandsBuilder();
+        if (!$commandBuilder) {
+            http_response_code(404);
+            echo 'The requested resource does not exist.';
             exit;
         }
 
-        http_response_code(404);
-        echo 'The requested resource does not exist.';
-        exit;
+        $command = $commandBuilder();
+        $command->run();
+    }
+
+    private function getCommandsBuilder(): callable
+    {
+        $request_uri = trim(explode('?', $_SERVER['REQUEST_URI'])[0] ?? '', '/');
+        $request_method = $_SERVER['REQUEST_METHOD'];
+
+        return match (true) {
+            $request_uri === 'v1/files/upload' && $request_method === 'POST' => function () {
+                return new UploadFileCommand(
+                    new FilesRepository(PdoHelper::getConnection()),
+                    new UploadFileService()
+                );
+            },
+            default => null,
+        };
     }
 }
