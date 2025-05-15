@@ -3,8 +3,8 @@
 namespace Files\Repositories;
 
 use PDO;
+use Throwable;
 use PDOException;
-
 use Files\Enums\FileStatusEnum;
 use Files\Repositories\Interfaces\FilesRepositoryInterface;
 
@@ -32,7 +32,7 @@ class FilesRepository implements FilesRepositoryInterface
     public function insert($name, $hashMd5, $hashSha256): bool
     {
         try {
-            $path = 'Storage/Files/' . $name;
+            $path = 'Storage/Files/' . $name;// refactor
             $status = FileStatusEnum::NOT_STARTED->value;
 
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -52,10 +52,10 @@ class FilesRepository implements FilesRepositoryInterface
         }
     }
 
-    public function getNextForProcessing(): array
+    public function getNextForProcessing(): ?array
     {
         try {
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->pdo->beginTransaction();
 
             $stmt = $this->pdo->prepare("
                 SELECT 
@@ -63,20 +63,41 @@ class FilesRepository implements FilesRepositoryInterface
                 FROM 
                     files
                 WHERE 
-                    status = ? OR (status = ? and last_processed_at < NOW() - INTERVAL '24 hours')
-                OFFSET 0
+                    status = :notStarted OR (status = :processing and last_processed_at < NOW() - INTERVAL '24 hours')
+                ORDER BY 
+                    id
+                FOR UPDATE SKIP LOCKED
                 LIMIT 1
             ");
-            $stmt->execute([FileStatusEnum::NOT_STARTED->value, FileStatusEnum::PROCESSING->value]);
+            $stmt->execute([
+                'notStarted' => FileStatusEnum::NOT_STARTED->value,
+                'processing' => FileStatusEnum::PROCESSING->value,
+            ]);
+            $file = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            $rows = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($rows !== false) {
-                return $rows;
+            if (empty($file)) {
+                $this->pdo->rollBack();
+
+                return null;
             }
 
-            return [];
-        } catch (PDOException $e) {
-            return [];
+            $update = $this->pdo->prepare("
+                UPDATE 
+                    files
+                SET status = :processing, last_processed_at = NOW()
+                WHERE id = :fileId
+            ");
+            $update->execute([
+                'processing' => FileStatusEnum::PROCESSING->value,
+                'fileId' => $file['id'],
+            ]);
+            $this->pdo->commit();
+
+            return $file;
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+
+            return null;
         }
     }
 
@@ -100,6 +121,7 @@ class FilesRepository implements FilesRepositoryInterface
             $stmt->bindParam(':status', $status);
             $stmt->bindParam(':id', $id);
             $stmt->bindParam(':completed', $completedStatus);
+
             return $stmt->execute();
         } catch (PDOException $e) {
             return false;

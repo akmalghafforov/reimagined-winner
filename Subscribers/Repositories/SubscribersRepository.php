@@ -2,8 +2,6 @@
 
 namespace Subscribers\Repositories;
 
-use Generator;
-use MongoDB\BSON\Timestamp;
 use PDO;
 use Subscribers\Repositories\Interfaces\SubscribersRepositoryInterface;
 

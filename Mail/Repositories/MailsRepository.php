@@ -37,7 +37,6 @@ class MailsRepository implements MailsRepositoryInterface
             $mail = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($mail) {
-                // Step 2: Update status to 2
                 $update = $this->pdo->prepare("
                     UPDATE 
                         mails 

@@ -24,26 +24,26 @@ class SendNextMailToAllSubscribersCommand
             return;
         }
 
-        $count = 0;
-        $failed = 0;
+        $totalSentMails = 0;
+        $atLeastOneBatchFailed = false;
 
         $allSubscribers = $this->subscribersRepository->getAllSubscribersToSentMailTo($nextMail['id']);
 
         foreach (array_chunk($allSubscribers, 100) as $subscribers) {
             if ($this->sendMailToSubscriberService->sendMailToSubscribers($subscribers, $nextMail['content'])) {
                 $this->mailsRepository->addSubscribersToSentMails($subscribers, $nextMail['id']);
-                $count += count(array_values($subscribers));
+                $totalSentMails += count(array_values($subscribers));
             } else {
-                $failed++;
+                $atLeastOneBatchFailed = true;
             }
         }
 
-        if ($failed > 0) {
+        if ($atLeastOneBatchFailed) {
             $this->mailsRepository->updateStatus($nextMail['id'], MailStatusEnum::PARTIALLY_SEND);
         } else {
             $this->mailsRepository->updateStatus($nextMail['id'], MailStatusEnum::SENT);
         }
 
-        echo "In total $count subscribers received the mail." . PHP_EOL;
+        echo "In total $totalSentMails subscribers received the mail." . PHP_EOL;
     }
 }

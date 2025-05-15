@@ -26,7 +26,6 @@ class ImportSubscribersFromUploadedFilesCommand
 
         echo "Import started." . PHP_EOL;
 
-        $this->fileRepository->updateStatus($nextFile['id'], FileStatusEnum::PROCESSING);
         $subscribers = CsvHelper::parseCsvToArray($nextFile['path']);
 
         foreach (array_chunk($subscribers, 1000) as $index => $chunk) {

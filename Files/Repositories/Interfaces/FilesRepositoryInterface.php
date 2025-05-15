@@ -10,7 +10,7 @@ interface FilesRepositoryInterface
 
     public function insert($name, $hashMd5, $hashSha256): bool;
 
-    public function getNextForProcessing(): array;
+    public function getNextForProcessing(): ?array;
 
     public function updateStatus(int $id, FileStatusEnum $status): bool;
 }

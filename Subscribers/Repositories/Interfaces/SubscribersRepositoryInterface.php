@@ -2,8 +2,6 @@
 
 namespace Subscribers\Repositories\Interfaces;
 
-use Generator;
-
 interface SubscribersRepositoryInterface
 {
     public function getMissingSubscriberNumbers(array $numbers): array;
