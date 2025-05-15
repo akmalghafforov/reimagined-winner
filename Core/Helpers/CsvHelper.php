@@ -16,10 +16,17 @@ class CsvHelper
             $headers = $withHeaders ? fgetcsv($handle) : [];
 
             while (($row = fgetcsv($handle)) !== false) {
+                $sanitizedRow = array_map(function ($value) {
+                    $value = preg_replace('/[\x00-\x1F\x7F]/u', '', $value);
+                    $value = trim($value);
+
+                    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                }, $row);
+
                 if ($withHeaders) {
-                    $data[] = array_combine($headers, $row);
+                    $data[] = array_combine($headers, $sanitizedRow);
                 } else {
-                    $data[] = $row;
+                    $data[] = $sanitizedRow;
                 }
             }
 

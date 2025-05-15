@@ -3,8 +3,8 @@
 namespace Files\Api\V1;
 
 use Core\Traits\JsonResponse;
-use Files\Repositories\Interfaces\FilesRepositoryInterface;
 use Files\Services\UploadFileService;
+use Files\Repositories\Interfaces\FilesRepositoryInterface;
 
 class UploadFileCommand
 {
@@ -13,8 +13,7 @@ class UploadFileCommand
     public function __construct(
         private readonly FilesRepositoryInterface $fileRepository,
         private readonly UploadFileService        $uploadService
-    )
-    {
+    ) {
     }
 
     public function run(): void
@@ -24,6 +23,10 @@ class UploadFileCommand
             $this->sendJson(400, 'Please provide a file.');;
         }
 
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            $this->sendJson(500, 'File upload error, please try again.');
+        }
+
         if (!$this->uploadService->isCsvFileBeingUploaded($file)) {
             $this->sendJson(422, 'Only CSV files are allowed, uploaded file is not a CSV file.');
         }
@@ -31,7 +34,7 @@ class UploadFileCommand
         [$hashMd5, $hashSha256] = $this->uploadService->getFileHashes($file);
 
         if (!$this->fileRepository->checkIfTheFileWasNotUploadedPreviously($hashMd5, $hashSha256)) {
-            $this->sendJson(409, 'The file has been already uploaded.');;
+            $this->sendJson(409, 'The file has already been uploaded.');
         }
 
         $uploadedFileName = $this->uploadService->saveFile($file);
