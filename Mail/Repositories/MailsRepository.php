@@ -4,6 +4,7 @@ namespace Mail\Repositories;
 
 use PDO;
 use Throwable;
+use Core\Helpers\LogHelper;
 use Mail\Enums\MailStatusEnum;
 use Mail\Repositories\Interfaces\MailsRepositoryInterface;
 
@@ -59,6 +60,7 @@ class MailsRepository implements MailsRepositoryInterface
 
             return null;
         } catch (Throwable $e) {
+            LogHelper::log($e->getMessage());
             $pdo->rollBack();
 
             return null;

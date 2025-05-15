@@ -5,6 +5,7 @@ namespace Files\Repositories;
 use PDO;
 use Throwable;
 use PDOException;
+use Core\Helpers\LogHelper;
 use Files\Enums\FileStatusEnum;
 use Files\Repositories\Interfaces\FilesRepositoryInterface;
 
@@ -48,6 +49,8 @@ class FilesRepository implements FilesRepositoryInterface
 
             return $stmt->execute();
         } catch (PDOException $e) {
+            LogHelper::log($e->getMessage());
+
             return false;
         }
     }

@@ -4,6 +4,7 @@ namespace Subscribers\Commands;
 
 use Throwable;
 use Core\Helpers\CsvHelper;
+use Core\Helpers\LogHelper;
 use Files\Enums\FileStatusEnum;
 use Files\Repositories\Interfaces\FilesRepositoryInterface;
 use Subscribers\Repositories\Interfaces\SubscribersRepositoryInterface;
@@ -44,6 +45,8 @@ class ImportSubscribersFromUploadedFilesCommand
 
                 echo "\tChunk #$index imported" . PHP_EOL;
             } catch (Throwable $e) {
+                LogHelper::log($e->getMessage());
+
                 echo "\tChunk #$index failed" . PHP_EOL;
             }
         }
