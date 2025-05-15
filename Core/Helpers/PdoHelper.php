@@ -8,9 +8,11 @@ class PdoHelper
 {
     public static function getConnection(): PDO
     {
-        $dsn = "pgsql:host=db;port=5432;dbname=app_db;";
-        $user = "user";
-        $password = "secret";
+        $config = require __DIR__ . '/../Configs/db.php';
+
+        $dsn = "pgsql:host={$config['host']};port={$config['port']};dbname={$config['db']};";
+        $user = $config['user'];
+        $password = $config['password'];
 
        return new PDO($dsn, $user, $password);
     }
