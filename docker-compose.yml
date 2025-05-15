@@ -33,11 +33,5 @@ services:
     depends_on:
       - app
 
-  php_cron:
-    build: .
-    container_name: php_cron_alpine
-    volumes:
-      - .:/var/www/html
-
 volumes:
   pgdata:

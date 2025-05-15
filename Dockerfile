@@ -21,7 +21,8 @@ RUN apk add --no-cache \
     nginx  \
     git \
     busybox-suid \
-    cronie
+    cronie \
+    supervisor
 
 # Configure PHP extensions
 RUN docker-php-ext-configure zip \
@@ -33,14 +34,16 @@ WORKDIR /var/www
 # Copy your application (optional)
 COPY . .
 
-# Set up cron job
-COPY crontab /etc/crontabs/root
+RUN mkdir -p /etc/crontabs \
+ && echo '* * * * * echo "cron works" >> /var/log/cron.log' > /etc/crontabs/root \
+ && chmod 600 /etc/crontabs/root
 
-# Fix permissions
-RUN chmod 0644 /etc/crontabs/root
+# Set up cron job
+RUN rm -f /var/run/crond.pid
+COPY supervisord.conf /etc/supervisord.conf
 
 # Expose port (if needed)
 EXPOSE 9000
 
 # Start PHP-FPM & Start cron in foreground
-CMD ["php-fpm", "crond -f -l 2"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
