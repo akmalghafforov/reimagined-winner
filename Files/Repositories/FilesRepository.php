@@ -33,7 +33,7 @@ class FilesRepository implements FilesRepositoryInterface
     public function insert($name, $hashMd5, $hashSha256): bool
     {
         try {
-            $path = 'Storage/Files/' . $name;// refactor
+            $path = 'Storage/Files/' . $name;
             $status = FileStatusEnum::NOT_STARTED->value;
 
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
