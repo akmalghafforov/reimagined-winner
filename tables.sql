@@ -40,3 +40,9 @@ ALTER TABLE subscribers ADD CONSTRAINT unique_number UNIQUE (number);
 CREATE INDEX idx_subscribers_number ON subscribers (number);
 
 ALTER TABLE subscribers ALTER COLUMN id TYPE BIGINT;
+
+ALTER TABLE mail ADD COLUMN status INTEGER DEFAULT 0;
+
+ALTER TABLE mail RENAME TO mails;
+
+ALTER TABLE sent_mail RENAME TO sent_mails;

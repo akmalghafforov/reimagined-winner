@@ -8,7 +8,7 @@ use Files\Enums\FileStatusEnum;
 use Files\Repositories\Interfaces\FilesRepositoryInterface;
 use Subscribers\Repositories\Interfaces\SubscribersRepositoryInterface;
 
-class ImportSubscribersFromUploadedFiles
+class ImportSubscribersFromUploadedFilesCommand
 {
     public function __construct(
         private readonly FilesRepositoryInterface       $fileRepository,

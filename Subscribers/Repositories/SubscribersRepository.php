@@ -2,6 +2,7 @@
 
 namespace Subscribers\Repositories;
 
+use Generator;
 use MongoDB\BSON\Timestamp;
 use PDO;
 use Subscribers\Repositories\Interfaces\SubscribersRepositoryInterface;
@@ -59,5 +60,36 @@ class SubscribersRepository implements SubscribersRepositoryInterface
         $stmt = $this->pdo->prepare($sql);
 
         return $stmt->execute($values);
+    }
+
+    public function getAllSubscribersToSentMailTo(int $mailId): array
+    {
+        $stmt = $this->pdo->prepare("
+                SELECT 
+                    s.*
+                FROM 
+                    subscribers s
+                WHERE NOT EXISTS (
+                    SELECT 
+                        1
+                    FROM 
+                        sent_mails sm
+                    WHERE 
+                        sm.mail_id = :mail_id AND 
+                        sm.subscriber_id = s.id
+                )
+                ORDER BY 
+                    s.id
+        ");
+
+        $stmt->bindValue(':mail_id', $mailId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (empty($rows)) {
+            return [];
+        }
+
+        return $rows;
     }
 }
