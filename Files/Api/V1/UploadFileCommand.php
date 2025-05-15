@@ -2,13 +2,13 @@
 
 namespace Files\Api\V1;
 
-use Core\Traits\JsonResponse;
+use Core\Traits\JsonResponseTrait;
 use Files\Services\UploadFileService;
 use Files\Repositories\Interfaces\FilesRepositoryInterface;
 
 class UploadFileCommand
 {
-    use JsonResponse;
+    use JsonResponseTrait;
 
     public function __construct(
         private readonly FilesRepositoryInterface $fileRepository,

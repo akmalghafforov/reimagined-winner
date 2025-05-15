@@ -5,12 +5,15 @@ namespace Subscribers\Commands;
 use Throwable;
 use Core\Helpers\CsvHelper;
 use Core\Helpers\LogHelper;
+use Core\Traits\ConsoleTrait;
 use Files\Enums\FileStatusEnum;
 use Files\Repositories\Interfaces\FilesRepositoryInterface;
 use Subscribers\Repositories\Interfaces\SubscribersRepositoryInterface;
 
 class ImportSubscribersFromUploadedFilesCommand
 {
+    use ConsoleTrait;
+
     public function __construct(
         private readonly FilesRepositoryInterface       $fileRepository,
         private readonly SubscribersRepositoryInterface $subscribersRepository,
@@ -21,11 +24,11 @@ class ImportSubscribersFromUploadedFilesCommand
     {
         $nextFile = $this->fileRepository->getNextForProcessing();
         if (empty($nextFile['id'])) {
-            echo "Nothing to import" . PHP_EOL;
+            $this->line('Nothing to import');
             return;
         }
 
-        echo "Import started." . PHP_EOL;
+        $this->line('Import started.');
 
         $subscribers = CsvHelper::parseCsvToArray($nextFile['path']);
 
@@ -43,16 +46,15 @@ class ImportSubscribersFromUploadedFilesCommand
                     array_values($subscribersToImport)
                 );
 
-                echo "\tChunk #$index imported" . PHP_EOL;
+                $this->line("\t Chunk #$index imported");
             } catch (Throwable $e) {
                 LogHelper::log($e->getMessage());
-
-                echo "\tChunk #$index failed" . PHP_EOL;
+                $this->line("\t Chunk #$index failed");
             }
         }
 
         $this->fileRepository->updateStatus($nextFile['id'], FileStatusEnum::COMPLETED);
 
-        echo "Import finished." . PHP_EOL;
+        $this->line("Import finished.");
     }
 }

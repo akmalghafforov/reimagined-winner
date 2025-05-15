@@ -2,7 +2,7 @@
 
 namespace Core\Traits;
 
-trait JsonResponse
+trait JsonResponseTrait
 {
     public function sendJson($code, $message, $data = []): void
     {

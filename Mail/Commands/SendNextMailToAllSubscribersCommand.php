@@ -2,13 +2,16 @@
 
 namespace BulkMailer\Commands;
 
+use Core\Traits\ConsoleTrait;
 use Mail\Enums\MailStatusEnum;
-use Mail\Repositories\Interfaces\MailsRepositoryInterface;
 use Mail\Services\SendMailToSubscriberService;
+use Mail\Repositories\Interfaces\MailsRepositoryInterface;
 use Subscribers\Repositories\Interfaces\SubscribersRepositoryInterface;
 
 class SendNextMailToAllSubscribersCommand
 {
+    use ConsoleTrait;
+
     public function __construct(
         private readonly MailsRepositoryInterface       $mailsRepository,
         private readonly SubscribersRepositoryInterface $subscribersRepository,
@@ -20,7 +23,7 @@ class SendNextMailToAllSubscribersCommand
     {
         $nextMail = $this->mailsRepository->getNextMail();
         if (empty($nextMail['id'])) {
-            echo "Nothing to send" . PHP_EOL;
+            $this->line("Nothing to send");
             return;
         }
 
@@ -44,6 +47,6 @@ class SendNextMailToAllSubscribersCommand
             $this->mailsRepository->updateStatus($nextMail['id'], MailStatusEnum::SENT);
         }
 
-        echo "In total $totalSentMails subscribers received the mail." . PHP_EOL;
+        $this->line("In total $totalSentMails subscribers received the mail.");
     }
 }
